@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja-jp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モバイルオーダー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>モバイルオーダー</h1>
+
+    <!-- ボタンとして機能する要素 -->
+    <div class="order" id="custom-button">
+        <p>オーダーする</p>
+    </div>
+
+    <!-- オーディオ要素 -->
+    <audio id="intro-sound" preload="auto"></audio>
+    <audio id="loop-sound" preload="auto"></audio>
+
+    <script>
+        const customButton = document.getElementById('custom-button');
+
+// 音声ファイルのパス
+const introSound = 'order/order1.ogg';  // 始まり部分の音声
+const loopSound = 'order/order2.ogg';   // 後半ループ部分の音声
+
+// オーディオ要素を取得
+const introAudio = document.getElementById('intro-sound');
+const loopAudio = document.getElementById('loop-sound');
+
+// 音声ファイルを設定
+introAudio.src = introSound;
+loopAudio.src = loopSound;
+
+// ループさせるためにloop属性を付与
+loopAudio.loop = true;
+
+let isHolding = false; // ボタンが長押しされているかどうか
+
+// 音声のロード完了を検出
+introAudio.addEventListener('loadedmetadata', () => {
+    const introDuration = introAudio.duration;
+    const overlapTime = 0.1;  // 切り替えを滑らかにするための重複再生タイミング（秒）
+
+    // ボタンを押したときの処理
+    customButton.addEventListener('mousedown', () => {
+        isHolding = true;
+
+        // 始まり部分の音声を再生
+        introAudio.play();
+
+        // 重複して後半部分の音声を再生（少し早めに再生開始）
+        setTimeout(() => {
+            if (isHolding) {
+                loopAudio.currentTime = 0; // ループ音声を先頭から再生
+                loopAudio.play();
+            }
+        }, (introDuration - overlapTime) * 1000);  // 少し早めにループを再生
+    });
+
+    // ループ音声が終了したときの処理
+    loopAudio.addEventListener('ended', () => {
+        if (isHolding) {
+            loopAudio.currentTime = 0; // 先頭から再生
+            loopAudio.play();
+        }
+    });
+});
+
+// ボタンを離したときの処理
+customButton.addEventListener('mouseup', () => {
+    isHolding = false;
+
+    // ループ音声を停止
+    loopAudio.pause();
+    loopAudio.currentTime = 0; // 再生位置を最初に戻す
+});
+
+// タッチデバイス対応（スマホやタブレット用）
+customButton.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    isHolding = true;
+    introAudio.play();
+
+    // 重複して後半部分の音声を再生（少し早めに再生開始）
+    setTimeout(() => {
+        if (isHolding) {
+            loopAudio.currentTime = 0; // ループ音声を先頭から再生
+            loopAudio.play();
+        }
+    }, (introAudio.duration - overlapTime) * 1000);  // 少し早めにループを再生
+});
+
+customButton.addEventListener('touchend', (event) => {
+    event.preventDefault();
+    isHolding = false;
+
+    // ループ音声を停止
+    loopAudio.pause();
+    loopAudio.currentTime = 0; // 再生位置を最初に戻す
+});
+
+        
+
+    </script>
+</body>
+</html>
